@@ -15,21 +15,20 @@ class PlaySoundViewController: UIViewController {
     var audioEngine:AVAudioEngine!
     var receivedAV:RecordedAudio!
     var audioFile:AVAudioFile!
+    var reverbPlayers:[AVAudioPlayer]! = []
+    var N:Int = 10
+
     
     override func viewDidLoad() {
 
         super.viewDidLoad()
         
         if var filePath = NSBundle.mainBundle().pathForResource("movie_quote2", ofType: "mp3") {
-            let url = NSURL.fileURLWithPath(filePath)
-            //audioPlayer = AVAudioPlayer(contentsOfURL: url, error: nil)
-            
-            //audioFile = AVAudioFile(forReading: url, error: nil)
-            
-            //println("File Found")
-        } else {
+            let url = NSURL.fileURLWithPath(filePath)        } else {
             println("File Not Found")
         }
+        
+        
         
         audioPlayer = AVAudioPlayer(contentsOfURL: receivedAV.filePathUrl, error: nil)
         
@@ -38,6 +37,11 @@ class PlaySoundViewController: UIViewController {
         audioFile = AVAudioFile(forReading: receivedAV.filePathUrl, error: nil)
         
         audioEngine = AVAudioEngine()
+        
+        
+        for i in 0...N {
+            reverbPlayers.append(audioPlayer)
+        }
     }
 
     override func didReceiveMemoryWarning() {
@@ -45,33 +49,23 @@ class PlaySoundViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
-    func playAudio() {
+    // SR - Stop and reset the player
+    func fnstopAudio() {
         audioPlayer.stop()
+        audioEngine.stop()
+        audioEngine.reset()
+    }
+    
+    // SR - stop and play the audio
+    func playAudio() {
+        fnstopAudio()
         audioPlayer.currentTime = 0.0
         audioPlayer.play()
     }
     
-    @IBAction func playSlowAudio(sender: UIButton) {
-        audioPlayer.rate = 0.5
-        playAudio()
-    }
-    
-    
-    @IBAction func PlayFastAudio(sender: AnyObject) {
-        audioPlayer.rate = 1.5
-        playAudio()
-    }
-    
-    @IBAction func stopAudio(sender: AnyObject) {
-        audioPlayer.stop()
-        audioEngine.stop()
-        audioEngine.reset()
-    }
-    
+    // SR - stop and play the audio with pitch parameter
     func playAudiowithPitch(pitch:Float) {
-        audioPlayer.stop()
-        audioEngine.stop()
-        audioEngine.reset()
+        fnstopAudio()
         
         var pitchPlayer = AVAudioPlayerNode()
         audioEngine.attachNode(pitchPlayer)
@@ -90,9 +84,39 @@ class PlaySoundViewController: UIViewController {
         
     }
     
+    func fnPlayReverb() {
+        let delay:NSTimeInterval = 0.02
+        fnstopAudio()
+        for i in 0...N {
+            audioPlayer.playAtTime(audioPlayer.deviceCurrentTime + delay)
+        }
+    }
+    
+    func fnPlayEcho() {
+        let delay:NSTimeInterval = 0.1
+        fnstopAudio()
+        audioPlayer.playAtTime(audioPlayer.deviceCurrentTime + delay)
+    }
+    
+    @IBAction func playReverb(sender: AnyObject) {
+        fnPlayReverb()
+    }
+    
+    @IBAction func playEcho(sender: AnyObject) {
+        fnPlayEcho()
+    }
+    
+    @IBAction func playSlowAudio(sender: UIButton) {
+        audioPlayer.rate = 0.5
+        playAudio()
+    }
+    
+    @IBAction func PlayFastAudio(sender: AnyObject) {
+        audioPlayer.rate = 1.5
+        playAudio()
+    }
     
     @IBAction func playChipmunkAudio(sender: AnyObject) {
-        //println("in playChipmunkAudio")
         playAudiowithPitch(1000)
     }
     
@@ -100,5 +124,8 @@ class PlaySoundViewController: UIViewController {
         playAudiowithPitch(-500)
     }
     
+    @IBAction func stopAudio(sender: AnyObject) {
+        fnstopAudio()
+    }
 
 }

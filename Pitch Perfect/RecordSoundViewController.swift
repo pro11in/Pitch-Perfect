@@ -17,6 +17,7 @@ class RecordSoundViewController: UIViewController, AVAudioRecorderDelegate {
     @IBOutlet weak var recordingInProgress: UILabel!
     @IBOutlet weak var stopBtn: UIButton!
     @IBOutlet weak var recordAudio: UIButton!
+    @IBOutlet weak var recordLabel: UILabel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -35,14 +36,10 @@ class RecordSoundViewController: UIViewController, AVAudioRecorderDelegate {
     
     func recAudio() {
         let dirPath = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask , true)[0] as!String
-        //let currentDateTime = NSDate()
-        //let formatter = NSDateFormatter()
-        //formatter.dateFormat = "ddMMyyyy-HHmmss"
-        //let recordingName = formatter.stringFromDate(currentDateTime)+".wav"
         let recordingName = "myAduio.wav"
         let pathArray = [dirPath, recordingName]
         let filePath = NSURL.fileURLWithPathComponents(pathArray)
-        println(filePath)
+        //println(filePath)
         
         var session = AVAudioSession.sharedInstance()
         session.setCategory(AVAudioSessionCategoryPlayAndRecord, error: nil)
@@ -56,13 +53,11 @@ class RecordSoundViewController: UIViewController, AVAudioRecorderDelegate {
     
     func audioRecorderDidFinishRecording(recorder: AVAudioRecorder!, successfully flag: Bool) {
         if (flag) {
-            recordedAudio = RecordedAudio()
-            recordedAudio.filePathUrl = recorder.url
-            recordedAudio.title  = recorder.url.lastPathComponent
+            recordedAudio = RecordedAudio(filePathUrl: recorder.url, title: recorder.url.lastPathComponent!)
             self.performSegueWithIdentifier("stopRecording", sender: recordedAudio)
             
         } else {
-            println("Recording Faled.")
+            println("Recording Failed.")
             recordAudio.enabled = true
             stopBtn.hidden = true
         }
@@ -83,7 +78,8 @@ class RecordSoundViewController: UIViewController, AVAudioRecorderDelegate {
     }
 
     @IBAction func RecordAudio(sender: UIButton) {
-            recordingInProgress.hidden = false
+            //recordingInProgress.hidden = false
+            recordLabel.text = "Recording"
             stopBtn.hidden = false
             recordAudio.enabled = false
         
@@ -91,7 +87,8 @@ class RecordSoundViewController: UIViewController, AVAudioRecorderDelegate {
     }
 
     @IBAction func StopRecording(sender: UIButton) {
-        recordingInProgress.hidden = true
+        //recordingInProgress.hidden = true
+        recordLabel.text = "Tap to Record"
         stopBtn.hidden = true
         
         stopAudio()
