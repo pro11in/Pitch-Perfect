@@ -25,21 +25,16 @@ class RecordSoundViewController: UIViewController, AVAudioRecorderDelegate {
     }
     
     override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
         stopBtn.hidden = true
         recordAudio.enabled = true
     }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
-    
+   
     func recAudio() {
         let dirPath = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask , true)[0] as!String
         let recordingName = "myAduio.wav"
         let pathArray = [dirPath, recordingName]
         let filePath = NSURL.fileURLWithPathComponents(pathArray)
-        //println(filePath)
         
         var session = AVAudioSession.sharedInstance()
         session.setCategory(AVAudioSessionCategoryPlayAndRecord, error: nil)
@@ -54,7 +49,7 @@ class RecordSoundViewController: UIViewController, AVAudioRecorderDelegate {
     func audioRecorderDidFinishRecording(recorder: AVAudioRecorder!, successfully flag: Bool) {
         if (flag) {
             recordedAudio = RecordedAudio(filePathUrl: recorder.url, title: recorder.url.lastPathComponent!)
-            self.performSegueWithIdentifier("stopRecording", sender: recordedAudio)
+            performSegueWithIdentifier("stopRecording", sender: recordedAudio)
             
         } else {
             println("Recording Failed.")
@@ -78,16 +73,14 @@ class RecordSoundViewController: UIViewController, AVAudioRecorderDelegate {
     }
 
     @IBAction func RecordAudio(sender: UIButton) {
-            //recordingInProgress.hidden = false
-            recordLabel.text = "Recording"
-            stopBtn.hidden = false
-            recordAudio.enabled = false
-        
-            recAudio()
+        recordLabel.text = "Recording"
+        stopBtn.hidden = false
+        recordAudio.enabled = false
+                
+        recAudio()
     }
 
     @IBAction func StopRecording(sender: UIButton) {
-        //recordingInProgress.hidden = true
         recordLabel.text = "Tap to Record"
         stopBtn.hidden = true
         

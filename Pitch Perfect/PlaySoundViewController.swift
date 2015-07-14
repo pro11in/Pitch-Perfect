@@ -23,13 +23,6 @@ class PlaySoundViewController: UIViewController {
 
         super.viewDidLoad()
         
-        if var filePath = NSBundle.mainBundle().pathForResource("movie_quote2", ofType: "mp3") {
-            let url = NSURL.fileURLWithPath(filePath)        } else {
-            println("File Not Found")
-        }
-        
-        
-        
         audioPlayer = AVAudioPlayer(contentsOfURL: receivedAV.filePathUrl, error: nil)
         
         audioPlayer.enableRate = true
@@ -42,11 +35,6 @@ class PlaySoundViewController: UIViewController {
         for i in 0...N {
             reverbPlayers.append(audioPlayer)
         }
-    }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
     
     // SR - Stop and reset the player
@@ -84,18 +72,49 @@ class PlaySoundViewController: UIViewController {
         
     }
     
+    // SR - Reverb the input audio
     func fnPlayReverb() {
-        let delay:NSTimeInterval = 0.02
         fnstopAudio()
-        for i in 0...N {
-            audioPlayer.playAtTime(audioPlayer.deviceCurrentTime + delay)
-        }
+        
+        var revPlayer = AVAudioPlayerNode()
+        var reverb = AVAudioUnitReverb()
+        
+        // SR - This is a reverb with a cathedral preset.
+        reverb.loadFactoryPreset(AVAudioUnitReverbPreset.Cathedral)
+        reverb.wetDryMix = 50.0
+        
+        audioEngine.attachNode(revPlayer)
+        audioEngine.attachNode(reverb)
+        
+        audioEngine.connect(revPlayer, to: reverb, format: nil)
+        audioEngine.connect(reverb, to: audioEngine.outputNode, format: nil)
+        
+        revPlayer.scheduleFile(audioFile, atTime: nil, completionHandler: nil)
+        audioEngine.startAndReturnError(nil)
+        
+        revPlayer.play()
+        
     }
     
+    // SR - Echo the input audio
     func fnPlayEcho() {
-        let delay:NSTimeInterval = 0.1
         fnstopAudio()
-        audioPlayer.playAtTime(audioPlayer.deviceCurrentTime + delay)
+        
+        var echoPlayer = AVAudioPlayerNode()
+        audioEngine.attachNode(echoPlayer)
+        
+        var echo = AVAudioUnitDelay()
+        echo.delayTime = 1.0
+        echo.feedback = 80.0
+        audioEngine.attachNode(echo)
+        
+        audioEngine.connect(echoPlayer, to: echo, format: nil)
+        audioEngine.connect(echo, to: audioEngine.outputNode, format: nil)
+        
+        echoPlayer.scheduleFile(audioFile, atTime: nil, completionHandler: nil)
+        audioEngine.startAndReturnError(nil)
+        
+        echoPlayer.play()
     }
     
     @IBAction func playReverb(sender: AnyObject) {
